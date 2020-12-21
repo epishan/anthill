@@ -1,4 +1,6 @@
-users:
+global_users:
+  ubuntu:
+    state: absent
   epishan:
     comment: Sergey-mac
     password: '*'

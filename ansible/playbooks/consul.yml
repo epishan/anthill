@@ -1,5 +1,5 @@
 - name: configure consul
-  hosts: anthill-test-generic
+  hosts: vault
   gather_facts: yes
   roles:
     - consul
