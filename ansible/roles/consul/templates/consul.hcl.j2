@@ -1,0 +1,15 @@
+datacenter = "dc1"
+node_name = "{{ inventory_hostname }}"
+data_dir = "/opt/consul"
+encrypt = "p8Ler2iUd3xAQXoZJQlN0bBNs13FepavtIwwADlMhUQ="
+retry_join = [
+{% for srv in consul_masters %}
+"{{ srv }}",
+{% endfor %}
+]
+disable_update_check = true
+
+telemetry {
+  prometheus_retention_time = "30m"
+  disable_hostname=true
+}

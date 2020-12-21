@@ -1,0 +1,7 @@
+- name: install unzip packages
+  become: True
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - unzip

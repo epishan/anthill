@@ -1,0 +1,32 @@
+- name: Install squid
+  become: True
+  yum:
+    name: squid
+    state: present
+
+- name: Push main template
+  become: True
+  template:
+    src: squid.conf.j2
+    dest: /etc/squid/squid.conf
+  notify:
+    - reload squid
+
+- name: Push specific configurations
+  become: True
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/squid/{{ item }}"
+  with_items:
+    - acl-permit-https.regex.txt
+    - acl-permit-url.regex.txt
+    - acl-permit-ports.txt
+  notify:
+    - reload squid
+
+- name: ensure squid is enabled
+  become: True
+  service:
+    name: squid
+    enabled: True
+    state: started

@@ -1,0 +1,5 @@
+- name: configure openvpn
+  hosts: jump
+  gather_facts: yes
+  roles:
+    - openvpn

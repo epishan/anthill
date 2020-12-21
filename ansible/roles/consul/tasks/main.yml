@@ -1,0 +1,63 @@
+---
+- name: Create directories
+  become: True
+  file:
+    name: "{{ item }}"
+    state: directory
+    owner: consul
+  with_items:
+  - /opt/consul
+  - /opt/consul/bin
+  - /etc/consul.d
+
+- name: upload consul version
+  become: True
+  copy:
+    src: consul_{{ consul_version }}_linux_amd64.zip
+    dest: /tmp/consul.zip
+
+- name: uncompress consul
+  become: True
+  unarchive:
+    src: /tmp/consul.zip
+    dest: /opt/consul/bin
+    remote_src: True
+    owner: consul
+
+- name: copy configuration
+  become: True
+  template:
+    src: server.hcl.j2
+    dest: /etc/consul.d/server.hcl
+    owner: consul
+  notify:
+  - Restart consul
+
+- name: copy configuration
+  become: True
+  template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+    owner: consul
+  notify:
+  - Restart consul
+
+- name: copy systemd unit
+  become: True
+  template:
+    src: consul.service.j2
+    dest: /etc/systemd/system/consul.service
+  register: systemd
+  notify:
+  - Restart consul
+
+- name: reload systemd
+  become: True
+  shell: systemctl daemon-reload
+
+- name: ensure consul is started and enabled
+  become: True
+  service:
+    name: consul
+    state: started
+    enabled: True

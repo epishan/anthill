@@ -1,0 +1,49 @@
+---
+- name: install docker
+  become: True
+  yum:
+    name:
+    - docker
+    - amazon-ecr-credential-helper
+    state: present
+
+- name: create .docker
+  become: True
+  file:
+    path: /root/.docker
+    state: directory
+
+- name: setup ecr credential helper
+  become: True
+  template:
+    src: config.json.j2
+    dest: /root/.docker/config.json
+
+- name: ensure docker is enabled and started
+  become: True
+  service:
+    name: docker
+    enabled: True
+    state: started
+
+- name: copy ansible dependencies
+  become: True
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp"
+  with_items:
+    - python-docker-py-1.10.6-9.el7_6.noarch.rpm
+    - python-docker-pycreds-0.3.0-9.el7_6.noarch.rpm
+    - python-websocket-client-0.56.0-3.git3c25814.el7.noarch.rpm
+
+- name: install ansible dependencies
+  become: True
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "/tmp/python-websocket-client-0.56.0-3.git3c25814.el7.noarch.rpm"
+    - "/tmp/python-docker-pycreds-0.3.0-9.el7_6.noarch.rpm"
+    - "/tmp/python-docker-py-1.10.6-9.el7_6.noarch.rpm"
+
+

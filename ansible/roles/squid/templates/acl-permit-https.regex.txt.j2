@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# ACL file for TLS hosts
+# Allowing "CONNECT" requests
+{% for key, setup in squid_acl.items() %}
+{% if setup.tls %}
+# {{ key }}
+^{{ setup.hostname }}:{{ setup.port }}
+{% endif %}
+{% endfor %}

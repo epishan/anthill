@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# ACL file for non TLS hosts
+# Allowing proxy requests requests
+{% for key, setup in squid_acl.items() %}
+{% if not setup.tls %}
+# {{ key }}
+^{{ setup.url }}
+{% endif %}
+{% endfor %}

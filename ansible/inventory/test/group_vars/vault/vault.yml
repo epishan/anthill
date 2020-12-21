@@ -1,0 +1,12 @@
+---
+vault_version: 1.4.2
+
+vault_path: '/opt/vault/bin'
+
+# should always be false for 1st deployment
+vault_tls: False
+
+enable_kms: False
+vault_kms: '617088fd-c0d6-4e6e-8bc9-5ff07eb85c18'
+vault_kms_region: 'ap-southeast-1'
+vault_kms_endpoint: 'kms.ap-southeast-1.amazonaws.com'

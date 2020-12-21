@@ -1,0 +1,5 @@
+---
+consul_version: 1.7.4
+
+consul_masters:
+-  172.16.125.182

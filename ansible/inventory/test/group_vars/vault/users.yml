@@ -1,0 +1,18 @@
+users:
+  consul:
+    comment: Consul user
+    password: '*'
+    shell: "/bin/false"
+    homeDirectory: /opt/consul
+    key: False
+    groups: nobody
+    state: present
+  vault:
+    comment: vault user
+    password: '*'
+    shell: "/bin/false"
+    homeDirectory: /opt/vault
+    key: False
+    groups: nobody
+    state: present
+

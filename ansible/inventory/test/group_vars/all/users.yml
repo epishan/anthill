@@ -1,0 +1,9 @@
+users:
+  epishan:
+    comment: Sergey-mac
+    password: '*'
+    shell: "/bin/bash"
+    homeDirectory: /home/epishan
+    key: True
+    groups: sudo
+    state: present

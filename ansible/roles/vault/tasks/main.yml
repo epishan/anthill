@@ -1,0 +1,61 @@
+---
+- name: Create directories
+  become: True
+  file:
+    name: "{{ item }}"
+    state: directory
+    owner: vault
+  with_items:
+  - "{{ vault_path }}"
+  - /etc/vault.d
+  - /etc/vault.d/certificates
+
+- name: upload vault version
+  become: True
+  copy:
+    src: vault_{{ vault_version }}_linux_amd64.zip
+    dest: /tmp/vault.zip
+
+- name: uncompress vault
+  become: True
+  unarchive:
+    src: /tmp/vault.zip
+    dest: "{{ vault_path }}" 
+    remote_src: True
+    owner: vault
+
+- name: copy configuration
+  become: True
+  template:
+    src: vault.hcl.j2
+    dest: /etc/vault.d/vault.hcl
+    owner: vault
+  notify:
+  - Restart vault
+
+- name: copy systemd unit
+  become: True
+  template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+  register: systemd
+  notify:
+  - Restart vault
+
+- name: reload systemd
+  become: True
+  shell: systemctl daemon-reload
+
+- name: ensure vault is started and enabled
+  become: True
+  service:
+    name: vault
+    state: started
+    enabled: True
+
+- name: copy configuration for vault cli
+  become: True
+  template:
+    src: vault.sh.j2
+    dest: /etc/profile.d/vault.sh
+    owner: root

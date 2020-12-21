@@ -1,0 +1,31 @@
+backend "consul" {
+  address = "127.0.0.1:8500"
+  path = "vault"
+}
+
+ui = true
+
+default_lease_ttl = "720h"
+max_lease_ttl = "8760h"
+
+listener "tcp" {
+  address = "0.0.0.0:8200"
+{% if vault_tls %}
+  tls_disable = 0
+  tls_key_file = "/etc/vault.d/certificates/cert.key"
+  tls_cert_file = "/etc/vault.d/certificates/cert.crt"
+{% else %}
+  tls_disable = 1
+{% endif %}
+  telemetry {
+    unauthenticated_metrics_access = true
+  }
+}
+
+{% if enable_kms %}
+seal "awskms" {
+  region     = "{{ vault_kms_region }}"
+  kms_key_id = "{{ vault_kms }}"
+  endpoint = "{{ vault_kms_endpoint }}"
+}
+{% endif %}

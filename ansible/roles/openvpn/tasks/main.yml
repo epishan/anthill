@@ -1,0 +1,57 @@
+---
+- name: install openvpn
+  become: True
+  yum:
+    name: openvpn
+    state: present
+
+- name: install configuration
+  become: True
+  template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server.conf
+
+- name: generate dh2048 file
+  become: True
+  shell: openssl dhparam -out /etc/openvpn/dh2048.pem 2048
+  args:
+    creates: /etc/openvpn/dh2048.pem
+
+- name: put tls parameters
+  become: True
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/openvpn/{{ item }}"
+  with_items:
+  - ca.crt
+  - server.crt
+  - server.key
+
+- name: create ccd folder
+  become: True
+  file:
+    name: /etc/openvpn/ccd
+    state: directory
+
+- name: create ccd configuration
+  become: True
+  template:
+    src: ccd.conf.j2
+    dest: /etc/openvpn/ccd/{{ item.key }}
+  with_dict: "{{ openvpn_users }}"
+
+- name: enable and start service
+  become: True
+  service:
+    name: openvpn@server
+    state: started
+    enabled: True
+
+- name: Enable ip forwarding
+  become: True
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    sysctl_set: true
+    reload: true

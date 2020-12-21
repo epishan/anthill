@@ -1,0 +1,4 @@
+export PATH=$PATH:{{ vault_path }}
+{% if not vault_tls %}
+export VAULT_ADDR=http://127.0.0.1:8200
+{% endif %}

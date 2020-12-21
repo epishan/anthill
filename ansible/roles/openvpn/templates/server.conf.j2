@@ -1,0 +1,54 @@
+# Port Number.
+port 1194
+
+# TCP or UDP server.
+proto udp
+
+# Interface type, TUN or TAP.
+dev tun
+
+# Certificates.
+ca ca.crt
+cert server.crt
+key server.key
+
+# Diffie hellman parameters.
+dh dh2048.pem
+
+push "route {{ environment_subnet.split('/')[0] }} 255.255.0.0"
+
+# DNS servers
+#push "dhcp-option DNS 192.168.0.1"
+
+# Subnet to use for OpenVPN Connections.
+server 192.168.0.0 255.255.255.0
+
+# Keepalive: send ping every 10 seconds, tunnel down after 120 seconds no response.
+keepalive 10 120
+
+# LZO Compression for the tunnel.
+comp-lzo
+
+# Drop privileges to user/group nobody.
+user nobody
+group nobody
+
+# Makes the link more resistant to connection failures.
+persist-key
+persist-tun
+
+# Username and Password authentication.
+# verify-client-cert none
+# plugin /usr/lib64/openvpn/plugins/openvpn-plugin-auth-pam.so login
+
+# OpenVPN Status Log files.
+status openvpn-status.log
+
+topology subnet
+client-config-dir /etc/openvpn/ccd
+# LOG FILE VERBOSITY:
+# 0 is silent, except for fatal errors
+# 4 is reasonable for general usage
+# 5 and 6 can help to debug connection problems
+# 9 is extremely verbose
+verb 3

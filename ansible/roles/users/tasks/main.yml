@@ -1,0 +1,73 @@
+- name: Ensure group "nobody" exists
+  become: True
+  become_method: sudo
+  group:
+    name: "{{ item.value.groups }}"
+    state: present
+  with_dict: "{{ users }}"
+  when: "item.value.state == 'present'"
+
+- name: Create sudo users
+  become: True
+  become_method: sudo
+  user:
+    name: "{{ item.key }}"
+    password: "{{ item.value.password }}"
+    shell: "{{ item.value.shell }}"
+    groups: "{{ item.value.groups }}"
+    home: "{{ item.value.homeDirectory }}"
+    comment: "{{ item.value.comment }}"
+    state: present
+  with_dict: "{{ users }}"
+  when: "item.value.state == 'present'"
+
+- name: Placing keys
+  become: True
+  become_method: sudo
+  authorized_key:
+    user: "{{ item.key }}"
+    key: "{{ lookup('file', '../files/authorized_keys/{{ item.key }}') }}"
+    exclusive: True
+  with_dict: "{{ users }}"
+  when: "'key' in item.value and item.value.key and item.value.state=='present'"
+
+- name: Add data to sudoers
+  become: True
+  become_method: sudo
+  lineinfile:
+    insertbefore: EOF
+    state: present
+    line: "{{ item.key }} ALL=(ALL) NOPASSWD: ALL"
+    create: True
+    dest: /etc/sudoers.d/00-users
+  with_dict: "{{ users }}"
+  when: "item.value.state == 'present' and 'sudo' in item.value.groups"
+
+- name: Remove from sudoers
+  become: True
+  become_method: sudo
+  lineinfile:
+    state: absent
+    line: "{{ item.key }} ALL=(ALL) NOPASSWD: ALL"
+    dest: /etc/sudoers.d/00-users
+  with_dict: "{{ users }}"
+  when: "item.value.state == 'absent' or 'sudo' not in item.value.groups"
+
+- name: Remove ubuntu from sudoers
+  become: True
+  become_method: sudo
+  file:
+    state: absent
+    path: /etc/sudoers.d/90-cloud-init-users
+  with_dict: "{{ users }}"
+  when: "item.key == 'ubuntu' and item.value.state == 'absent'"
+
+- name: Delete user
+  become: True
+  become_method: sudo
+  user:
+    name: "{{ item.key }}"
+    state: absent
+    force: True
+  with_dict: "{{ users }}"
+  when: "item.value.state == 'absent'"

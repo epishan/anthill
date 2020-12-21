@@ -1,0 +1,61 @@
+http_port               8080
+pid_filename            /var/run/squid.pid
+hosts_file              /usr/local/etc/squid/hosts
+
+
+## ACL: permit request destination domains.
+acl datadog src 127.0.0.1/32
+acl datadog src localhost
+http_access allow manager datadog
+# Whitelisting based on url (non TLS requests)
+acl Safe_URLs           url_regex "/etc/squid/acl-permit-url.regex.txt"
+# Whitelisting based on hostname (TLS requests)
+acl Safe_HTTPS          url_regex "/etc/squid/acl-permit-https.regex.txt"
+# Deny all other trafic
+http_access             deny !Safe_URLs !Safe_HTTPS
+
+## ACL: permit request ports.
+acl Safe_ports          port "/etc/squid/acl-permit-ports.txt"
+http_access             deny !Safe_ports
+
+## ACL: permit request sources.
+acl localhost           src 127.0.0.1/32
+acl internal_network    src {{ environment_subnet }}
+http_access             allow localhost
+http_access             allow internal_network
+
+http_access             deny  all
+
+
+## Cache setting.
+## no cache.
+cache_mem               0 MB
+cache_dir               ufs /var/spool/squid 100 16 256
+cache_effective_user    squid # for prod squid
+cache_effective_group   squid # for prod squid
+no_cache                deny all
+
+
+## HTTP request header security setting.
+forwarded_for           off
+via                     off
+icp_port                0
+ignore_expect_100       on
+
+## NO-Cache DNS
+ipcache_size            0
+fqdncache_size          0
+
+## Timeout setting.
+connect_timeout         {{ squid_connect_timeout }}
+read_timeout            {{ squid_read_timeout }}
+request_timeout         {{ squid_request_timeout }}
+shutdown_lifetime       {{ squid_shutdown_lifetime }}
+
+strip_query_terms       on
+logformat               combined %tl.%03tu|%03<Hs|%03>Hs|%Ss:%Sh|%>a:%>p|HTTP/%rv|%rm|%<A|%{Host}>h|%ru|%mt|%>st|%tr
+access_log              /var/log/squid/access.log combined
+cache_log               /var/log/squid/cache.log
+#cache_store_log        /var/log/squid/store.log
+cache_store_log         none
+logfile_rotate          0

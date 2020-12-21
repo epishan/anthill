@@ -1,0 +1,5 @@
+- name: reload squid
+  become: True
+  service:
+    name: squid
+    state: reloaded

@@ -1,0 +1,35 @@
+- name: copy ansible dependencies
+  become: True
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp"
+  with_items:
+    - haproxy-2.1.4-1.el7.x86_64.rpm
+
+- name: install ansible dependencies
+  become: True
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "/tmp/haproxy-2.1.4-1.el7.x86_64.rpm"
+
+
+- name: configure haproxy
+  become: True
+  template:
+    src: haproxy.conf.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: write pem files
+  become: True
+  template:
+    src: pem.j2
+    dest: /etc/haproxy/ssl.pem
+
+- name: ensure service is enabled
+  become: True
+  service:
+    name: haproxy
+    state: started
+    enabled: True

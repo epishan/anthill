@@ -1,0 +1,7 @@
+- name: run base setup
+  hosts: all
+  gather_facts: no
+  roles:
+    - hostname
+    - base
+
